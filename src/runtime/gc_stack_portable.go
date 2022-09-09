@@ -1,5 +1,6 @@
-//go:build gc.conservative && tinygo.wasm
-// +build gc.conservative,tinygo.wasm
+//go:build (gc.conservative || gc.extalloc) && tinygo.wasm
+// +build gc.conservative gc.extalloc
+// +build tinygo.wasm
 
 package runtime
 

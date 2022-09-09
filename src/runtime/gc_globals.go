@@ -1,6 +1,6 @@
-//go:build gc.conservative && (baremetal || tinygo.wasm)
+//go:build gc.conservative && (baremetal || tinygo.wasm || polkawasm)
 // +build gc.conservative
-// +build baremetal tinygo.wasm
+// +build baremetal tinygo.wasm polkawasm
 
 package runtime
 

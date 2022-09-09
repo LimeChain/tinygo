@@ -94,7 +94,12 @@ func (c *Config) GC() string {
 	if c.Target.GC != "" {
 		return c.Target.GC
 	}
-	return "conservative"
+	for _, tag := range c.Target.BuildTags {
+		if tag == "baremetal" || tag == "wasm" {
+			return "conservative"
+		}
+	}
+	return "extalloc"
 }
 
 func (c *Config) Opt() string {
@@ -109,7 +114,7 @@ func (c *Config) Opt() string {
 // that can be traced by the garbage collector.
 func (c *Config) NeedsStackObjects() bool {
 	switch c.GC() {
-	case "conservative":
+	case "conservative", "extalloc":
 		for _, tag := range c.BuildTags() {
 			if tag == "tinygo.wasm" {
 				return true

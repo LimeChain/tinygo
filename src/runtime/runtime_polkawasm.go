@@ -76,3 +76,22 @@ func procPin() {
 //go:linkname procUnpin sync/atomic.runtime_procUnpin
 func procUnpin() {
 }
+
+// TODO:POLKAWASM
+
+func extalloc(size uintptr) unsafe.Pointer {
+	offset := extAllocatorMallocVersion1(int32(size))
+	return unsafe.Pointer(uintptr(offset))
+}
+
+func extfree(ptr unsafe.Pointer) {
+	extAllocatorFreeVersion1(int32(uintptr(ptr)))
+}
+
+func markGlobals() {
+	markRoots(globalsStart, globalsEnd)
+}
+
+func setHeapEnd(newHeapEnd uintptr) {
+	// Nothing to do here, this function is never actually called.
+}
