@@ -72,12 +72,6 @@ func strlen(ptr unsafe.Pointer) uintptr
 //export malloc
 func malloc(size uintptr) unsafe.Pointer
 
-//export ext_allocator_malloc_version_1
-func extAllocatorMallocVersion1(size int32) int32
-
-//export ext_allocator_free_version_1
-func extAllocatorFreeVersion1(ptr int32)
-
 // Compare two same-size buffers for equality.
 func memequal(x, y unsafe.Pointer, n uintptr) bool {
 	for i := uintptr(0); i < n; i++ {

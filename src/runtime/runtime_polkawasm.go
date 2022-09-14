@@ -79,14 +79,13 @@ func procUnpin() {
 
 // TODO:POLKAWASM
 
-func extalloc(size uintptr) unsafe.Pointer {
-	offset := extAllocatorMallocVersion1(int32(size))
-	return unsafe.Pointer(uintptr(offset))
-}
+//go:wasm-module env
+//go:export ext_allocator_malloc_version_1
+func extalloc(size uintptr) unsafe.Pointer
 
-func extfree(ptr unsafe.Pointer) {
-	extAllocatorFreeVersion1(int32(uintptr(ptr)))
-}
+//go:wasm-module env
+//go:export ext_allocator_free_version_1
+func extfree(ptr unsafe.Pointer)
 
 func markGlobals() {
 	markRoots(globalsStart, globalsEnd)
