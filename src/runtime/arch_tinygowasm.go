@@ -67,16 +67,19 @@ func growHeap() bool {
 // the wasi-libc dlmalloc heap implementation instead. If they are needed by any
 // program, they can certainly be implemented.
 
+// //go:wasm-module
 // //export malloc
 // func libc_malloc(size uintptr) unsafe.Pointer {
 // 	return alloc(size, nil)
 // }
 
+// //go:wasm-module
 // //export free
 // func libc_free(ptr unsafe.Pointer) {
 // 	free(ptr)
 // }
 
+// //go:wasm-module
 // //export calloc
 // func libc_calloc(nmemb, size uintptr) unsafe.Pointer {
 // 	// Note: we could be even more correct here and check that nmemb * size
@@ -85,6 +88,7 @@ func growHeap() bool {
 // 	return alloc(nmemb*size, nil)
 // }
 
+// //go:wasm-module
 // //export realloc
 // func libc_realloc(ptr unsafe.Pointer, size uintptr) unsafe.Pointer {
 // 	return realloc(ptr, size)
