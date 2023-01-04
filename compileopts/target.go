@@ -63,6 +63,7 @@ type TargetSpec struct {
 	CodeModel        string   `json:"code-model"`
 	RelocationModel  string   `json:"relocation-model"`
 	WasmAbi          string   `json:"wasm-abi"`
+	Opt              string   `json:"opt"`
 }
 
 // overrideProperties overrides all properties that are set in child into itself using reflection.
