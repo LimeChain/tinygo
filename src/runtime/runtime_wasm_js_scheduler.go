@@ -1,4 +1,4 @@
-//go:build wasm && !wasi && !scheduler.none
+//go:build wasm && !wasi && !polkawasm && !scheduler.none
 
 package runtime
 
