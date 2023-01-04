@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tinygo-org/tinygo/compiler/llvmutil"
 	"tinygo.org/x/go-llvm"
 )
 
@@ -20,12 +19,6 @@ import (
 func (b *builder) defineIntrinsicFunction() {
 	name := b.fn.RelString(nil)
 	switch {
-	case name == "runtime.memcpy" || name == "runtime.memmove":
-		b.createMemoryCopyImpl()
-	case name == "runtime.memzero":
-		b.createMemoryZeroImpl()
-	case name == "runtime.KeepAlive":
-		b.createKeepAliveImpl()
 	case strings.HasPrefix(name, "runtime/volatile.Load"):
 		b.createVolatileLoad()
 	case strings.HasPrefix(name, "runtime/volatile.Store"):
@@ -39,77 +32,6 @@ func (b *builder) defineIntrinsicFunction() {
 			b.CreateRetVoid()
 		}
 	}
-}
-
-// createMemoryCopyImpl creates a call to a builtin LLVM memcpy or memmove
-// function, declaring this function if needed. These calls are treated
-// specially by optimization passes possibly resulting in better generated code,
-// and will otherwise be lowered to regular libc memcpy/memmove calls.
-func (b *builder) createMemoryCopyImpl() {
-	b.createFunctionStart(true)
-	fnName := "llvm." + b.fn.Name() + ".p0.p0.i" + strconv.Itoa(b.uintptrType.IntTypeWidth())
-	if llvmutil.Major() < 15 { // compatibility with LLVM 14
-		fnName = "llvm." + b.fn.Name() + ".p0i8.p0i8.i" + strconv.Itoa(b.uintptrType.IntTypeWidth())
-	}
-	llvmFn := b.mod.NamedFunction(fnName)
-	if llvmFn.IsNil() {
-		fnType := llvm.FunctionType(b.ctx.VoidType(), []llvm.Type{b.i8ptrType, b.i8ptrType, b.uintptrType, b.ctx.Int1Type()}, false)
-		llvmFn = llvm.AddFunction(b.mod, fnName, fnType)
-	}
-	var params []llvm.Value
-	for _, param := range b.fn.Params {
-		params = append(params, b.getValue(param, getPos(b.fn)))
-	}
-	params = append(params, llvm.ConstInt(b.ctx.Int1Type(), 0, false))
-	b.CreateCall(llvmFn.GlobalValueType(), llvmFn, params, "")
-	b.CreateRetVoid()
-}
-
-// createMemoryZeroImpl creates calls to llvm.memset.* to zero a block of
-// memory, declaring the function if needed. These calls will be lowered to
-// regular libc memset calls if they aren't optimized out in a different way.
-func (b *builder) createMemoryZeroImpl() {
-	b.createFunctionStart(true)
-	fnName := "llvm.memset.p0.i" + strconv.Itoa(b.uintptrType.IntTypeWidth())
-	if llvmutil.Major() < 15 { // compatibility with LLVM 14
-		fnName = "llvm.memset.p0i8.i" + strconv.Itoa(b.uintptrType.IntTypeWidth())
-	}
-	llvmFn := b.mod.NamedFunction(fnName)
-	if llvmFn.IsNil() {
-		fnType := llvm.FunctionType(b.ctx.VoidType(), []llvm.Type{b.i8ptrType, b.ctx.Int8Type(), b.uintptrType, b.ctx.Int1Type()}, false)
-		llvmFn = llvm.AddFunction(b.mod, fnName, fnType)
-	}
-	params := []llvm.Value{
-		b.getValue(b.fn.Params[0], getPos(b.fn)),
-		llvm.ConstInt(b.ctx.Int8Type(), 0, false),
-		b.getValue(b.fn.Params[1], getPos(b.fn)),
-		llvm.ConstInt(b.ctx.Int1Type(), 0, false),
-	}
-	b.CreateCall(llvmFn.GlobalValueType(), llvmFn, params, "")
-	b.CreateRetVoid()
-}
-
-// createKeepAlive creates the runtime.KeepAlive function. It is implemented
-// using inline assembly.
-func (b *builder) createKeepAliveImpl() {
-	b.createFunctionStart(true)
-
-	// Get the underlying value of the interface value.
-	interfaceValue := b.getValue(b.fn.Params[0], getPos(b.fn))
-	pointerValue := b.CreateExtractValue(interfaceValue, 1, "")
-
-	// Create an equivalent of the following C code, which is basically just a
-	// nop but ensures the pointerValue is kept alive:
-	//
-	//     __asm__ __volatile__("" : : "r"(pointerValue))
-	//
-	// It should be portable to basically everything as the "r" register type
-	// exists basically everywhere.
-	asmType := llvm.FunctionType(b.ctx.VoidType(), []llvm.Type{b.i8ptrType}, false)
-	asmFn := llvm.InlineAsm(asmType, "", "r", true, false, 0, false)
-	b.createCall(asmType, asmFn, []llvm.Value{pointerValue}, "")
-
-	b.CreateRetVoid()
 }
 
 var mathToLLVMMapping = map[string]string{
