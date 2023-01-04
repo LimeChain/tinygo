@@ -75,3 +75,19 @@ func procPin() {
 //go:linkname procUnpin sync/atomic.runtime_procUnpin
 func procUnpin() {
 }
+
+//go:wasm-module env
+//go:export ext_allocator_malloc_version_1
+func extalloc(size uintptr) unsafe.Pointer
+
+//go:wasm-module env
+//go:export ext_allocator_free_version_1
+func extfree(ptr unsafe.Pointer)
+
+func markGlobals() {
+	markRoots(globalsStart, globalsEnd)
+}
+
+func setHeapEnd(newHeapEnd uintptr) {
+	// Nothing to do here, this function is never actually called.
+}
