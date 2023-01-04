@@ -1,4 +1,4 @@
-//go:build windows || darwin || (linux && !baremetal)
+//go:build windows || darwin || (linux && !baremetal && !polkawasm)
 
 package os_test
 

@@ -1,4 +1,4 @@
-//go:build baremetal || js
+//go:build baremetal || js || polkawasm
 
 package syscall
 
