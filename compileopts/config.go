@@ -143,9 +143,36 @@ func (c *Config) Serial() string {
 	return "none"
 }
 
+func (c *Config) Opt() string {
+	if c.Target.Opt != "" {
+		return c.Target.Opt
+	}
+
+	return c.Options.Opt
+}
+
 // OptLevels returns the optimization level (0-2), size level (0-2), and inliner
 // threshold as used in the LLVM optimization pipeline.
 func (c *Config) OptLevels() (optLevel, sizeLevel int, inlinerThreshold uint) {
+	if c.Target.Opt != "" {
+		switch c.Target.Opt {
+		case "none", "0":
+			return 0, 0, 0 // -O0
+		case "1":
+			return 1, 0, 0 // -O1
+		case "2":
+			return 2, 0, 225 // -O2
+		case "s":
+			return 2, 1, 225 // -Os
+		case "z":
+			return 2, 2, 5 // -Oz, default
+		default:
+			// This is not shown to the user: valid choices are already checked as
+			// part of Options.Verify(). It is here as a sanity check.
+			panic("unknown optimization level: -opt=" + c.Target.Opt)
+		}
+	}
+
 	switch c.Options.Opt {
 	case "none", "0":
 		return 0, 0, 0 // -O0
@@ -326,7 +353,7 @@ func (c *Config) CFlags() []string {
 	// Always emit debug information. It is optionally stripped at link time.
 	cflags = append(cflags, "-gdwarf-4")
 	// Use the same optimization level as TinyGo.
-	cflags = append(cflags, "-O"+c.Options.Opt)
+	cflags = append(cflags, "-O"+c.Opt())
 	// Set the LLVM target triple.
 	cflags = append(cflags, "--target="+c.Triple())
 	// Set the -mcpu (or similar) flag.

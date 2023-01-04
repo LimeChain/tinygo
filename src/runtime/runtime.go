@@ -28,18 +28,37 @@ func GOROOT() string {
 // Copy size bytes from src to dst. The memory areas must not overlap.
 // This function is implemented by the compiler as a call to a LLVM intrinsic
 // like llvm.memcpy.p0.p0.i32(dst, src, size, false).
-func memcpy(dst, src unsafe.Pointer, size uintptr)
+func memcpy(dst, src unsafe.Pointer, size uintptr) {
+	for i := uintptr(0); i < size; i++ {
+		*(*uint8)(unsafe.Pointer(uintptr(dst) + i)) = *(*uint8)(unsafe.Pointer(uintptr(src) + i))
+	}
+}
 
 // Copy size bytes from src to dst. The memory areas may overlap and will do the
 // correct thing.
 // This function is implemented by the compiler as a call to a LLVM intrinsic
 // like llvm.memmove.p0.p0.i32(dst, src, size, false).
-func memmove(dst, src unsafe.Pointer, size uintptr)
+func memmove(dst, src unsafe.Pointer, size uintptr) {
+	if uintptr(dst) < uintptr(src) {
+		// Copy forwards.
+		memcpy(dst, src, size)
+		return
+	}
+	// Copy backwards.
+	for i := size; i != 0; {
+		i--
+		*(*uint8)(unsafe.Pointer(uintptr(dst) + i)) = *(*uint8)(unsafe.Pointer(uintptr(src) + i))
+	}
+}
 
 // Set the given number of bytes to zero.
 // This function is implemented by the compiler as a call to a LLVM intrinsic
 // like llvm.memset.p0.i32(ptr, 0, size, false).
-func memzero(ptr unsafe.Pointer, size uintptr)
+func memzero(ptr unsafe.Pointer, size uintptr) {
+	for i := uintptr(0); i < size; i++ {
+		*(*byte)(unsafe.Pointer(uintptr(ptr) + i)) = 0
+	}
+}
 
 // This intrinsic returns the current stack pointer.
 // It is normally used together with llvm.stackrestore but also works to get the
