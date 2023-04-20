@@ -5,7 +5,7 @@
 	"build-tags":         ["tinygo.wasm", "polkawasm", "runtime_memhash_leveldb"],
 	"goos":               "linux",
 	"goarch":             "arm",
-	"gc": 								"conservative",
+	"gc": 								"extalloc",
 	"opt":                "0",
 	"linker":             "wasm-ld",
 	"libc":          			"",

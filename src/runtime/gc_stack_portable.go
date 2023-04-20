@@ -1,4 +1,4 @@
-//go:build (gc.conservative || gc.custom || gc.precise) && tinygo.wasm
+//go:build (gc.conservative || gc.custom || gc.precise || gc.extalloc) && tinygo.wasm
 
 package runtime
 
