@@ -1,4 +1,4 @@
-//go:build (gc.conservative || gc.precise) && (baremetal || tinygo.wasm)
+//go:build (gc.extallocleak || gc.conservative || gc.precise) && (baremetal || tinygo.wasm || polkawasm)
 
 package runtime
 

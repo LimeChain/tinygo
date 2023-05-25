@@ -1,29 +1,33 @@
 {
-	"llvm-target":        "wasm32-unknown-unknown",
-	"cpu":                "generic",
-	"features":           "",
-	"build-tags":         ["tinygo.wasm", "polkawasm", "runtime_memhash_leveldb"],
-	"goos":               "linux",
-	"goarch":             "arm",
-	"gc": 								"conservative",
-	"opt":                "0",
-	"linker":             "wasm-ld",
-	"libc":          			"",
-	"scheduler":          "none",
+	"llvm-target": "wasm32-unknown-unknown",
+	"cpu": "generic",
+	"features": "",
+	"build-tags": [
+		"tinygo.wasm",
+		"polkawasm"
+	],
+	"goos": "linux",
+	"goarch": "arm",
+	"gc": "extallocleak",
+	"opt": "0",
+	"linker": "wasm-ld",
+	"libc": "",
+	"scheduler": "none",
 	"default-stack-size": 16384,
 	"cflags": [],
 	"ldflags": [
 		"--initial-memory=1310720",
-    "--allow-undefined",
+		"--stack-first",
+		"--allow-undefined",
 		"--no-demangle",
 		"--import-memory",
 		"--export=__heap_base",
-  	"--export=__data_end",
+		"--export=__data_end",
 		"--export-table"
 	],
 	"extra-files": [
 		"src/runtime/asm_tinygowasm.S"
 	],
-	"emulator":           "wasmtime {}",
-	"wasm-abi":           "generic"
+	"emulator": "wasmtime {}",
+	"wasm-abi": "generic"
 }

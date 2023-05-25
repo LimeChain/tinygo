@@ -90,7 +90,7 @@ func (c *Config) CgoEnabled() bool {
 }
 
 // GC returns the garbage collection strategy in use on this platform. Valid
-// values are "none", "leaking", "conservative" and "precise".
+// values are "none", "leaking", "extallocleak", "conservative" and "precise".
 func (c *Config) GC() string {
 	if c.Options.GC != "" {
 		return c.Options.GC
@@ -98,14 +98,19 @@ func (c *Config) GC() string {
 	if c.Target.GC != "" {
 		return c.Target.GC
 	}
-	return "conservative"
+	for _, tag := range c.Target.BuildTags {
+		if tag == "baremetal" || tag == "wasm" {
+			return "conservative"
+		}
+	}
+	return "extallocleak"
 }
 
 // NeedsStackObjects returns true if the compiler should insert stack objects
 // that can be traced by the garbage collector.
 func (c *Config) NeedsStackObjects() bool {
 	switch c.GC() {
-	case "conservative", "custom", "precise":
+	case "extallocleak", "conservative", "custom", "precise":
 		for _, tag := range c.BuildTags() {
 			if tag == "tinygo.wasm" {
 				return true
