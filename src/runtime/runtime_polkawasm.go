@@ -12,7 +12,39 @@ func _start() {
 	// These need to be initialized early so that the heap can be initialized.
 	heapStart = uintptr(unsafe.Pointer(&heapStartSymbol))
 	heapEnd = uintptr(wasm_memory_size(0) * wasmPageSize)
-	run()
+
+	// run()
+	initHeap()
+	// initAll()
+	callMain()
+}
+
+// Using global variables to avoid heap allocation.
+const putcharBufferSize = 8 * 1024
+
+var (
+	putcharBuffer        = [putcharBufferSize]byte{}
+	putcharPosition uint = 0
+)
+
+//go:export _debug_buf
+func debugBuf() uintptr {
+	return uintptr(unsafe.Pointer(&putcharBuffer[0]))
+}
+
+func putchar(c byte) {
+	putcharBuffer[putcharPosition] = c
+	putcharPosition++
+}
+
+func getchar() byte {
+	// TODO
+	return 0
+}
+
+func buffered() int {
+	// TODO
+	return 0
 }
 
 // Abort executes the wasm 'unreachable' instruction.
@@ -28,17 +60,6 @@ func os_runtime_args() []string {
 //go:linkname syscall_runtime_envs syscall.runtime_envs
 func syscall_runtime_envs() []string {
 	return []string{}
-}
-
-func putchar(c byte) {
-}
-
-func getchar() byte {
-	return 0
-}
-
-func buffered() int {
-	return -1
 }
 
 type timeUnit int64
@@ -69,6 +90,9 @@ func syscall_Exit(code int) {
 	return
 }
 
+// TinyGo does not yet support any form of parallelism on WebAssembly, so these
+// can be left empty.
+
 //go:linkname procPin sync/atomic.runtime_procPin
 func procPin() {
 }
@@ -76,3 +100,11 @@ func procPin() {
 //go:linkname procUnpin sync/atomic.runtime_procUnpin
 func procUnpin() {
 }
+
+//go:wasm-module env
+//go:export ext_allocator_malloc_version_1
+func extalloc(size uintptr) unsafe.Pointer
+
+//go:wasm-module env
+//go:export ext_allocator_free_version_1
+func extfree(ptr unsafe.Pointer)

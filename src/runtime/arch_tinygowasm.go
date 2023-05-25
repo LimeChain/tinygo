@@ -42,7 +42,9 @@ func align(ptr uintptr) uintptr {
 	return (ptr + heapAlign - 1) &^ (heapAlign - 1)
 }
 
-func getCurrentStackPointer() uintptr
+func getCurrentStackPointer() uintptr {
+	return uintptr(stacksave())
+}
 
 // growHeap tries to grow the heap size. It returns true if it succeeds, false
 // otherwise.
@@ -67,29 +69,29 @@ func growHeap() bool {
 // the wasi-libc dlmalloc heap implementation instead. If they are needed by any
 // program, they can certainly be implemented.
 
-//go:wasm-module
-//export malloc
-func libc_malloc(size uintptr) unsafe.Pointer {
-	return alloc(size, nil)
-}
+// //go:wasm-module
+// //export malloc
+// func libc_malloc(size uintptr) unsafe.Pointer {
+// 	return alloc(size, nil)
+// }
 
-//go:wasm-module
-//export free
-func libc_free(ptr unsafe.Pointer) {
-	free(ptr)
-}
+// //go:wasm-module
+// //export free
+// func libc_free(ptr unsafe.Pointer) {
+// 	free(ptr)
+// }
 
-//go:wasm-module
-//export calloc
-func libc_calloc(nmemb, size uintptr) unsafe.Pointer {
-	// Note: we could be even more correct here and check that nmemb * size
-	// doesn't overflow. However the current implementation should normally work
-	// fine.
-	return alloc(nmemb*size, nil)
-}
+// //go:wasm-module
+// //export calloc
+// func libc_calloc(nmemb, size uintptr) unsafe.Pointer {
+// 	// Note: we could be even more correct here and check that nmemb * size
+// 	// doesn't overflow. However the current implementation should normally work
+// 	// fine.
+// 	return alloc(nmemb*size, nil)
+// }
 
-//go:wasm-module
-//export realloc
-func libc_realloc(ptr unsafe.Pointer, size uintptr) unsafe.Pointer {
-	return realloc(ptr, size)
-}
+// //go:wasm-module
+// //export realloc
+// func libc_realloc(ptr unsafe.Pointer, size uintptr) unsafe.Pointer {
+// 	return realloc(ptr, size)
+// }

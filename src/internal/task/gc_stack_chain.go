@@ -1,5 +1,6 @@
-//go:build gc.conservative && tinygo.wasm
-// +build gc.conservative,tinygo.wasm
+//go:build (gc.conservative || gc.extallocleak) && tinygo.wasm
+// +build gc.conservative gc.extallocleak
+// +build tinygo.wasm
 
 package task
 
