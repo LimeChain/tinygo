@@ -7,7 +7,8 @@ import (
 	"unsafe"
 )
 
-//export _start
+// no need to export "_start", since it is the host allocator's
+// responsibility to initialize and grow the heap as needed
 func _start() {
 	// These need to be initialized early so that the heap can be initialized.
 	heapStart = uintptr(unsafe.Pointer(&heapStartSymbol))
@@ -20,14 +21,14 @@ func _start() {
 }
 
 // Using global variables to avoid heap allocation.
-const putcharBufferSize = 8 * 1024
+const putcharBufferSize = 256 // increase the debug output size
 
 var (
 	putcharBuffer        = [putcharBufferSize]byte{}
 	putcharPosition uint = 0
 )
 
-//go:export _debug_buf
+// export as "_debug_buf" to read the debug output from the host
 func debugBuf() uintptr {
 	return uintptr(unsafe.Pointer(&putcharBuffer[0]))
 }

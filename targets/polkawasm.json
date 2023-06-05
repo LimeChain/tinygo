@@ -16,14 +16,15 @@
 	"default-stack-size": 16384,
 	"cflags": [],
 	"ldflags": [
-		"--initial-memory=6553600",
+		"--initial-memory=1310720",
 		"--stack-first",
 		"--allow-undefined",
 		"--no-demangle",
 		"--import-memory",
 		"--export=__heap_base",
 		"--export=__data_end",
-		"--export-table"
+		"--export-table",
+		"--no-entry"
 	],
 	"emulator": "wasmtime {}",
 	"wasm-abi": "generic"
