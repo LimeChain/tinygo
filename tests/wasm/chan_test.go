@@ -10,7 +10,7 @@ func TestChan(t *testing.T) {
 
 	wasmTmpDir, server := startServer(t)
 
-	err := run(t, "tinygo build -o "+wasmTmpDir+"/chan.wasm -target wasm testdata/chan.go")
+	err := run(t, "../../build/tinygo build -o "+wasmTmpDir+"/chan.wasm -target wasm testdata/chan.go")
 	if err != nil {
 		t.Fatal(err)
 	}

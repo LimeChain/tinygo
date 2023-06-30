@@ -10,7 +10,7 @@ func TestFmt(t *testing.T) {
 
 	wasmTmpDir, server := startServer(t)
 
-	err := run(t, "tinygo build -o "+wasmTmpDir+"/fmt.wasm -target wasm testdata/fmt.go")
+	err := run(t, "../../build/tinygo build -o "+wasmTmpDir+"/fmt.wasm -target wasm testdata/fmt.go")
 	if err != nil {
 		t.Fatal(err)
 	}

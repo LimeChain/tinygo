@@ -10,7 +10,7 @@ func TestEvent(t *testing.T) {
 
 	wasmTmpDir, server := startServer(t)
 
-	err := run(t, "tinygo build -o "+wasmTmpDir+"/event.wasm -target wasm testdata/event.go")
+	err := run(t, "../../build/tinygo build -o "+wasmTmpDir+"/event.wasm -target wasm testdata/event.go")
 	if err != nil {
 		t.Fatal(err)
 	}

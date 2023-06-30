@@ -10,7 +10,7 @@ func TestFmtprint(t *testing.T) {
 
 	wasmTmpDir, server := startServer(t)
 
-	err := run(t, "tinygo build -o "+wasmTmpDir+"/fmtprint.wasm -target wasm testdata/fmtprint.go")
+	err := run(t, "../../build/tinygo build -o "+wasmTmpDir+"/fmtprint.wasm -target wasm testdata/fmtprint.go")
 	if err != nil {
 		t.Fatal(err)
 	}
