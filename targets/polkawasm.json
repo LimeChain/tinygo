@@ -4,8 +4,7 @@
 	"features": "",
 	"build-tags": [
 		"tinygo.wasm",
-		"polkawasm",
-		"runtime_memhash_leveldb"
+		"polkawasm"
 	],
 	"goos": "linux",
 	"goarch": "arm",
@@ -17,17 +16,19 @@
 	"default-stack-size": 16384,
 	"cflags": [],
 	"ldflags": [
+		"--stack-first",
 		"--initial-memory=1310720",
 		"--allow-undefined",
 		"--no-demangle",
 		"--import-memory",
 		"--export=__heap_base",
 		"--export=__data_end",
-		"--export-table"
+		"--export-table",
+		"--no-entry"
 	],
 	"extra-files": [
 		"src/runtime/asm_tinygowasm.S"
 	],
-	"emulator": "wasmtime {}",
+	"emulator": "wasmtime --mapdir=/tmp::{tmpDir} {}",
 	"wasm-abi": "generic"
 }
