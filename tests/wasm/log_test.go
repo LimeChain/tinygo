@@ -10,7 +10,7 @@ func TestLog(t *testing.T) {
 
 	wasmTmpDir, server := startServer(t)
 
-	err := run(t, "../../build/tinygo build -o "+wasmTmpDir+"/log.wasm -target wasm testdata/log.go")
+	err := run(t, "tinygo build -o "+wasmTmpDir+"/log.wasm -target wasm testdata/log.go")
 	if err != nil {
 		t.Fatal(err)
 	}

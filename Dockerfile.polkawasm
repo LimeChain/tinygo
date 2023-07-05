@@ -32,15 +32,4 @@ RUN cd /tinygo/ && \
 
 WORKDIR /tinygo
 
-RUN mkdir -p build
-RUN cp $GOPATH/bin/tinygo build/tinygo
-
-# Insstall google chrome for the wasm tests
-# wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-# sh -c 'echo "deb [arch=arm64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-# apt-get update 
-# apt-get install google-chrome-stable
-
-# apt install -y qemu qemu-kvm libvirt-daemon libvirt-clients bridge-utils virt-manager
-
 CMD ["tinygo"]

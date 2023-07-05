@@ -33,15 +33,14 @@ func abort() {
 func putchar(c byte) {
 	// putcharBuffer[putcharPosition] = c
 	// putcharPosition++
-	panic("unimplemented: putchar")
 }
 
 func getchar() byte {
-	panic("unimplemented: getchar")
+	return 0
 }
 
 func buffered() int {
-	panic("unimplemented: buffered")
+	return 0
 }
 
 type timeUnit int64
@@ -77,20 +76,20 @@ func os_runtime_args() []string {
 	return []string{}
 }
 
-// //go:linkname syscall_Exit syscall.Exit
-// func syscall_Exit(code int) {
-// 	return
-// }
+//go:linkname syscall_Exit syscall.Exit
+func syscall_Exit(code int) {
 
-// //go:linkname procPin sync/atomic.runtime_procPin
-// func procPin() {
-//
-// }
+}
 
-// //go:linkname procUnpin sync/atomic.runtime_procUnpin
-// func procUnpin() {
-//
-// }
+//go:linkname procPin sync/atomic.runtime_procPin
+func procPin() {
+
+}
+
+//go:linkname procUnpin sync/atomic.runtime_procUnpin
+func procUnpin() {
+
+}
 
 //go:wasm-module env
 //go:export ext_allocator_malloc_version_1
