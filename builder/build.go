@@ -434,10 +434,10 @@ func Build(pkgName, outpath, tmpdir string, config *compileopts.Config) (BuildRe
 				if pkgInit.IsNil() {
 					panic("init not found for " + pkg.Pkg.Path())
 				}
-				err := interp.RunFunc(pkgInit, config.Options.InterpTimeout, config.DumpSSA())
-				if err != nil {
-					return err
-				}
+				// err := interp.RunFunc(pkgInit, config.Options.InterpTimeout, config.DumpSSA())
+				// if err != nil {
+				// 	return err
+				// }
 				if err := llvm.VerifyModule(mod, llvm.PrintMessageAction); err != nil {
 					return errors.New("verification error after interpreting " + pkgInit.Name())
 				}
