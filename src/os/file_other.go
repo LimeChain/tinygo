@@ -1,4 +1,4 @@
-//go:build baremetal || (wasm && !wasi)
+//go:build baremetal || polkawasm || (wasm && !wasi)
 
 package os
 

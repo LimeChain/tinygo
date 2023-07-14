@@ -1,4 +1,4 @@
-//go:build baremetal || wasi || wasm
+//go:build baremetal || wasi || wasm || polkawasm
 
 // This file emulates some process-related functions that are only available
 // under a real operating system.
