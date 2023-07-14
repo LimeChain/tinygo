@@ -152,6 +152,8 @@ func (c *Config) OptLevel() (level string, speedLevel, sizeLevel int) {
 		return "O1", 1, 0
 	case "2":
 		return "O2", 2, 0
+	case "3":
+		return "O3", 2, 0
 	case "s":
 		return "Os", 2, 1
 	case "z":
