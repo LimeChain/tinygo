@@ -9,9 +9,10 @@
 	],
 	"goos": "linux",
 	"goarch": "arm",
+	"gc": "conservative",
 	"linker": "wasm-ld",
 	"libc": "wasi-libc",
-	"scheduler": "asyncify",
+	"scheduler": "none",
 	"default-stack-size": 16384,
 	"cflags": [
 		"-mbulk-memory",
@@ -19,8 +20,14 @@
 		"-msign-ext"
 	],
 	"ldflags": [
+		"--initial-memory=1310720",
+		"--no-demangle",
 		"--stack-first",
-		"--no-demangle"
+		"--import-memory",
+		"--allow-undefined",
+		"--export=__heap_base",
+		"--export=__data_end",
+		"--export-table"
 	],
 	"extra-files": [
 		"src/runtime/asm_tinygowasm.S"
