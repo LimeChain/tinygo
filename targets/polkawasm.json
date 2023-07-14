@@ -9,7 +9,7 @@
 	],
 	"goos": "linux",
 	"goarch": "arm",
-	"gc": "conservative",
+	"gc": "extalloc",
 	"linker": "wasm-ld",
 	"libc": "wasi-libc",
 	"scheduler": "none",

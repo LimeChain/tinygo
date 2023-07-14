@@ -180,3 +180,11 @@ func divideByZeroPanic() {
 func blockingPanic() {
 	runtimePanicAt(returnAddress(0), "trying to do blocking operation in exported function")
 }
+
+func gcRunningPanic() {
+	runtimePanicAt(returnAddress(0), "gc: already running")
+}
+
+func gcAllocPanic() {
+	runtimePanicAt(returnAddress(0), "gc: failed to allocate")
+}

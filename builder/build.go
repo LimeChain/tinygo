@@ -816,15 +816,25 @@ func Build(pkgName, outpath, tmpdir string, config *compileopts.Config) (BuildRe
 					args = append(args, "--asyncify")
 				}
 
-				args = append(args,
-					opt,
-					"-g",
-					result.Executable,
-					"--output", result.Executable,
-				)
-
 				if config.Target.Triple == "wasm32-unknown-polkawasm" {
-					args = append(args, "--signext-lowering")
+					args = append(args,
+						opt,
+						"--signext-lowering",
+						// "--signature-pruning",
+						// "--const-hoisting",
+						// "--mvp-features",
+						result.Executable,
+						"--output",
+						result.Executable,
+					)
+				} else {
+					args = append(args,
+						opt,
+						"-g",
+						result.Executable,
+						"--output",
+						result.Executable,
+					)
 				}
 
 				cmd := exec.Command(goenv.Get("WASMOPT"), args...)
