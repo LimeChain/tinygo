@@ -1,0 +1,35 @@
+# diffs
+# - prebuild LLVM
+# - WASI platform dependencies (wasi-libc, binaryen /lib submodules)
+
+FROM golang:1.19.5-bullseye AS tinygo-base
+
+ENV GO111MODULE=on
+ENV GOFLAGS="-buildvcs=false"
+
+# Add the LLVM 15 repo for Debian 11 Bullseye
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
+  echo "deb http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" | tee /etc/apt/sources.list.d/llvm.list
+
+# Install LLVM toolchain packages
+RUN apt-get update && apt-get install -y \
+  clang-15 lld-15 llvm-15-dev libclang-15-dev cmake ninja-build
+
+# Copy TinyGo repo
+COPY . /tinygo
+
+# Update submodule
+RUN cd /tinygo/ && \
+  rm -rf ./lib/*/ && \
+  git submodule sync && \
+  git submodule update --init --recursive --force lib/wasi-libc && \
+  git submodule update --init --recursive --force lib/binaryen
+
+# Build WASI libs, Bynaryen (wasm-opts dependency) and the TinyGo compiler
+RUN cd /tinygo/ && \
+  make wasi-libc binaryen && \
+  go install .
+
+WORKDIR /tinygo
+
+CMD ["tinygo"]
