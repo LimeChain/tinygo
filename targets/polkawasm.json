@@ -9,7 +9,7 @@
 	],
 	"goos": "linux",
 	"goarch": "arm",
-	"gc": "conservative",
+	"gc": "custom",
 	"linker": "wasm-ld",
 	"libc": "wasi-libc",
 	"scheduler": "none",
