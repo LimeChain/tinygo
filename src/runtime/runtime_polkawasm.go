@@ -13,17 +13,17 @@ import "unsafe"
 // }
 
 // Using global variables to avoid heap allocation.
-const putcharBufferSize = 256 // increase the debug output size
+const putcharBufferSize = 32 * 1024 // increase the debug output size
 
 var (
 	putcharBuffer        = [putcharBufferSize]byte{}
 	putcharPosition uint = 0
 )
 
-// //go:export _debug_buf
-// func debugBuf() uintptr {
-// 	return uintptr(unsafe.Pointer(&putcharBuffer[0]))
-// }
+//go:export _debug_buf
+func debugBuf() uintptr {
+	return uintptr(unsafe.Pointer(&putcharBuffer[0]))
+}
 
 // Abort executes the wasm 'unreachable' instruction.
 func abort() {

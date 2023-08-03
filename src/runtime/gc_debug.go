@@ -2,7 +2,7 @@
 
 package runtime
 
-const gcDebug = false
+const gcDebug = true
 
 func printnum(num int) {
 	digits := [10]int{}
