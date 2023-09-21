@@ -1,5 +1,5 @@
 {
-	"llvm-target": "wasm32-unknown-unknown",
+	"llvm-target": "wasm32-unknown-polkawasm",
 	"cpu": "generic",
 	"features": "",
 	"build-tags": [

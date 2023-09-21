@@ -1,6 +1,5 @@
-# diffs
+# Diffs:
 # - prebuild LLVM
-# - WASI platform dependencies (wasi-libc, binaryen /lib submodules)
 
 FROM golang:1.19.5-bullseye AS tinygo-base
 
@@ -18,18 +17,17 @@ RUN apt-get update && apt-get install -y \
 # Copy TinyGo repo
 COPY . /tinygo
 
-# Update submodule
-RUN cd /tinygo/ && \
-  rm -rf ./lib/*/ && \
-  git submodule sync && \
-  git submodule update --init --recursive --force lib/wasi-libc && \
-  git submodule update --init --recursive --force lib/binaryen
+WORKDIR /tinygo/lib/binaryen
 
-# Build WASI libs, Bynaryen (wasm-opts dependency) and the TinyGo compiler
-RUN cd /tinygo/ && \
-  make wasi-libc binaryen && \
-  go install .
+# Install binaryen(wasm-opt) 
+RUN cmake . && make
+
+ENV WASMOPT="/tinygo/lib/binaryen/bin/wasm-opt"
 
 WORKDIR /tinygo
+
+# Build wasi-libc and tinygo compiler
+RUN make wasi-libc && \
+  go install .
 
 CMD ["tinygo"]

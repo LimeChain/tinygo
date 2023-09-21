@@ -836,6 +836,10 @@ func Build(pkgName, outpath, tmpdir string, config *compileopts.Config) (BuildRe
 					"--output", result.Executable,
 				)
 
+				if config.Target.Triple == "wasm32-unknown-polkawasm" {
+					args = append(args, "--signext-lowering")
+				}
+
 				cmd := exec.Command(goenv.Get("WASMOPT"), args...)
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
