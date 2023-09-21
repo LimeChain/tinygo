@@ -13,7 +13,7 @@
 	branch = main
 [submodule "lib/wasi-libc"]
 	path = lib/wasi-libc
-	url = https://github.com/WebAssembly/wasi-libc
+	url = https://github.com/LimeChain/wasi-libc
 [submodule "lib/picolibc"]
 	path = lib/picolibc
 	url = https://github.com/keith-packard/picolibc.git
