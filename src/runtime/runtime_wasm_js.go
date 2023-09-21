@@ -1,4 +1,4 @@
-//go:build wasm && !wasi && !wasip1
+//go:build wasm && !wasi && !wasip1 && !polkawasm
 
 package runtime
 
