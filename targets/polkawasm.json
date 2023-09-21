@@ -1,7 +1,7 @@
 {
 	"llvm-target": "wasm32-unknown-polkawasm",
 	"cpu": "generic",
-	"features": "+bulk-memory,+nontrapping-fptoint,+sign-ext",
+	"features": "",
 	"build-tags": [
 		"tinygo.wasm",
 		"polkawasm",
@@ -14,11 +14,7 @@
 	"libc": "wasi-libc",
 	"scheduler": "none",
 	"default-stack-size": 16384,
-	"cflags": [
-		"-mbulk-memory",
-		"-mnontrapping-fptoint",
-		"-msign-ext"
-	],
+	"cflags": [],
 	"ldflags": [
 		"--initial-memory=1310720",
 		"--no-demangle",
