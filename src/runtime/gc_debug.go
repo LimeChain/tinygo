@@ -1,58 +1,34 @@
-//go:build gc.custom || gc.custom_wip
+//go:build gc.custom
 
 package runtime
 
 const gcDebug = false
 
 func printnum(num int) {
-	digits := [10]int{}
-
-	for i := 0; num > 0; i++ {
-		digit := num % 10
-		digits[i] = digit
-		num = num / 10
+	if num == 0 {
+		printstr("0")
+		return
 	}
 
-	for i := 0; i < len(digits)/2; i++ {
-		j := len(digits) - i - 1
+	digits := [16]int{} // store up to 16 digits
+	digitStrings := [10]string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	count := 0 // count of digits
+
+	// extract digits from the number
+	for ; num > 0; num /= 10 {
+		digits[count] = num % 10
+		count++
+	}
+
+	// reverse the digits
+	for i := 0; i < count/2; i++ {
+		j := count - i - 1
 		digits[i], digits[j] = digits[j], digits[i]
 	}
 
-	skipZeros := true
-	for i := 0; i < len(digits); i++ {
-		digit := digits[i]
-		if skipZeros && digit == 0 {
-			continue
-		}
-		skipZeros = false
-
-		digitStr := ""
-
-		switch digit {
-		case 0:
-			digitStr = "0"
-		case 1:
-			digitStr = "1"
-		case 2:
-			digitStr = "2"
-		case 3:
-			digitStr = "3"
-		case 4:
-			digitStr = "4"
-		case 5:
-			digitStr = "5"
-		case 6:
-			digitStr = "6"
-		case 7:
-			digitStr = "7"
-		case 8:
-			digitStr = "8"
-		case 9:
-			digitStr = "9"
-		default:
-		}
-
-		printstr(digitStr)
+	// print each digit
+	for i := 0; i < count; i++ {
+		printstr(digitStrings[digits[i]])
 	}
 }
 

@@ -1,4 +1,4 @@
-//go:build gc.custom
+//go:build gc.custom_wip
 
 package runtime
 
@@ -61,31 +61,21 @@ func setHeapEnd(newHeapEnd uintptr) {
 //
 //go:noinline
 func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
-	printstr("call alloc(")
-	printnum(int(size))
-	printstr(")\n")
-
 	if size == 0 {
 		return unsafe.Pointer(&zeroSizedAlloc)
 	}
 
-	printstr("\ttotal memory ")
-	printnum(int(gcTotalAlloc))
-	printstr("\n")
-
-	size = align(size)
+	size += align(unsafe.Sizeof(layout))
 
 	// Try to bound heap growth.
 	if gcTotalAlloc+uint64(size) < gcTotalAlloc {
-		printstr("\tout of memory\n")
 		abort()
 	}
 
 	// Allocate the memory.
 	pointer := extalloc(size)
 	if pointer == nil {
-		printstr("\textalloc call failed\n")
-		abort()
+		gcAllocPanic()
 	}
 
 	// Zero-out the allocated memory
@@ -105,19 +95,13 @@ func free(ptr unsafe.Pointer) {
 
 // markRoots is called with the start and end addresses to scan for references.
 // It is currently only called with the top and bottom of the stack.
-func markRoots(start, end uintptr) {
-
-}
+func markRoots(start, end uintptr) {}
 
 // GC is called to explicitly run garbage collection.
-func GC() {
-
-}
+func GC() {}
 
 // SetFinalizer registers a finalizer.
-func SetFinalizer(obj interface{}, finalizer interface{}) {
-
-}
+func SetFinalizer(obj interface{}, finalizer interface{}) {}
 
 // ReadMemStats populates m with memory statistics.
 func ReadMemStats(ms *MemStats) {
