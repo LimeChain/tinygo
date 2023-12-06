@@ -1,4 +1,4 @@
-//go:build darwin || (linux && !baremetal && !js && !wasi)
+//go:build darwin || (linux && !baremetal && !js && !wasi && !polkawasm)
 
 // TODO: implement ReadDir on windows
 

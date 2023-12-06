@@ -1,0 +1,34 @@
+{
+	"llvm-target": "wasm32-unknown-polkawasm",
+	"cpu": "generic",
+	"features": "",
+	"build-tags": [
+		"tinygo.wasm",
+		"polkawasm",
+		"runtime_memhash_leveldb"
+	],
+	"goos": "linux",
+	"goarch": "arm",
+	"gc": "extalloc",
+	"linker": "wasm-ld",
+	"libc": "wasi-libc",
+	"scheduler": "none",
+	"default-stack-size": 16384,
+	"cflags": [],
+	"ldflags": [
+		"--initial-memory=1310720",
+		"--no-demangle",
+		"--stack-first",
+		"--import-memory",
+		"--allow-undefined",
+		"--export=__heap_base",
+		"--export=__data_end",
+		"--export-table",
+		"--no-entry"
+	],
+	"extra-files": [
+		"src/runtime/asm_tinygowasm.S"
+	],
+	"emulator": "wasmtime --mapdir=/tmp::{tmpDir} {}",
+	"wasm-abi": "generic"
+}
