@@ -1,5 +1,4 @@
 //go:build gc.custom
-// +build gc.custom
 
 package runtime
 

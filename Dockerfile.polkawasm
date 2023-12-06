@@ -1,0 +1,33 @@
+# Diffs:
+# - prebuild LLVM
+
+FROM golang:1.21-bullseye AS tinygo-base
+
+ENV GO111MODULE=on
+ENV GOFLAGS="-buildvcs=false"
+
+# Add the LLVM 16 repo for Debian 11 Bullseye
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
+  echo "deb http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-16 main" | tee /etc/apt/sources.list.d/llvm.list
+
+# Install LLVM toolchain packages
+RUN apt-get update && apt-get install -y \
+  clang-16 lld-16 llvm-16-dev libclang-16-dev cmake ninja-build
+
+# Copy TinyGo repo
+COPY . /tinygo
+
+WORKDIR /tinygo/lib/binaryen
+
+# Install binaryen(wasm-opt) 
+RUN cmake . && make
+
+ENV WASMOPT="/tinygo/lib/binaryen/bin/wasm-opt"
+
+WORKDIR /tinygo
+
+# Build wasi-libc and tinygo compiler
+RUN make wasi-libc && \
+  go install .
+
+CMD ["tinygo"]
