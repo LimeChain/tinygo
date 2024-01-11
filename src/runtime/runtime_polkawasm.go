@@ -30,10 +30,7 @@ func abort() {
 	trap()
 }
 
-func putchar(c byte) {
-	putcharBuffer[putcharPosition] = c
-	putcharPosition++
-}
+func putchar(c byte) {}
 
 func getchar() byte {
 	return 0
