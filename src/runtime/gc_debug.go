@@ -42,6 +42,7 @@ func printstr(str string) {
 			break
 		}
 
-		putchar(str[i])
+		putcharBuffer[putcharPosition] = str[i]
+		putcharPosition++
 	}
 }
