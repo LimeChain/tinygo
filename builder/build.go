@@ -819,6 +819,7 @@ func Build(pkgName, outpath, tmpdir string, config *compileopts.Config) (BuildRe
 				if config.Target.Triple == "wasm32-unknown-polkawasm" {
 					args = append(args,
 						opt,
+						"-g",
 						"--signext-lowering",
 						// "--signature-pruning",
 						// "--const-hoisting",
