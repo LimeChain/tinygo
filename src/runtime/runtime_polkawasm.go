@@ -79,14 +79,21 @@ func syscall_Exit(code int) {
 }
 
 //go:linkname procPin sync/atomic.runtime_procPin
-func procPin() {
-
-}
+func procPin() {}
 
 //go:linkname procUnpin sync/atomic.runtime_procUnpin
-func procUnpin() {
+func procUnpin() {}
 
+func hardwareRand() (n uint64, ok bool) {
+	n |= uint64(libc_arc4random())
+	n |= uint64(libc_arc4random()) << 32
+	return n, true
 }
+
+// uint32_t arc4random(void);
+//
+//export arc4random
+func libc_arc4random() uint32
 
 //go:wasmimport env ext_allocator_malloc_version_1
 func extalloc(size uintptr) unsafe.Pointer
