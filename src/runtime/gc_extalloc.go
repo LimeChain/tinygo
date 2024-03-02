@@ -96,7 +96,7 @@ func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
 				adjustHeapUsageLimit(size)
 			} else {
 				// Run the garbage collector and update the flag.
-				// GC()
+				GC()
 				gcRan = true
 			}
 			continue
@@ -122,7 +122,7 @@ func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
 					gcAllocPanic()
 				} else {
 					// Run the garbage collector and update the flag.
-					// GC()
+					GC()
 					gcRan = true
 				}
 			}
@@ -160,7 +160,7 @@ func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
 				gcAllocPanic()
 			} else {
 				// Run the garbage collector and update the flag.
-				// GC()
+				GC()
 				gcRan = true
 			}
 			continue
