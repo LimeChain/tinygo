@@ -2,7 +2,7 @@
 
 package runtime
 
-const gcDebug = true
+const gcDebug = false
 
 func printnum(num int) {
 	if num == 0 {
@@ -47,11 +47,11 @@ func printstr(str string) {
 	}
 }
 
-//go:export _write_debug_info
-func writeDebugInfo(int32, int32) int64 {
-	printallocs()
-	return 0
-}
+// //go:export _write_debug_info
+// func writeDebugInfo(int32, int32) int64 {
+// 	printallocs()
+// 	return 0
+// }
 
 func printalloc(curAlloc heapAllocation, i int) int {
 	size := int(curAlloc.end - curAlloc.start)
