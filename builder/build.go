@@ -17,10 +17,12 @@ import (
 	"io/fs"
 	"math/bits"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gofrs/flock"
 	"github.com/tinygo-org/tinygo/compileopts"
@@ -812,48 +814,48 @@ func Build(pkgName, outpath, tmpdir string, config *compileopts.Config) (BuildRe
 				}
 			}
 
-			// // Run wasm-opt for wasm binaries
-			// if arch := strings.Split(config.Triple(), "-")[0]; arch == "wasm32" {
-			// 	optLevel, _, _ := config.OptLevel()
-			// 	opt := "-" + optLevel
+			// Run wasm-opt for wasm binaries
+			if arch := strings.Split(config.Triple(), "-")[0]; arch == "wasm32" {
+				optLevel, _, _ := config.OptLevel()
+				opt := "-" + optLevel
 
-			// 	var args []string
+				var args []string
 
-			// 	if config.Scheduler() == "asyncify" {
-			// 		args = append(args, "--asyncify")
-			// 	}
+				if config.Scheduler() == "asyncify" {
+					args = append(args, "--asyncify")
+				}
 
-			// 	if config.Target.Triple == "wasm32-unknown-polkawasm" {
-			// 		args = append(args,
-			// 			opt,
-			// 			"-g",
-			// 			"--signext-lowering",
-			// 			// "--signature-pruning",
-			// 			// "--const-hoisting",
-			// 			// "--mvp-features",
-			// 			result.Executable,
-			// 			"--output",
-			// 			result.Executable,
-			// 		)
-			// 	} else {
-			// 		args = append(args,
-			// 			opt,
-			// 			"-g",
-			// 			result.Executable,
-			// 			"--output",
-			// 			result.Executable,
-			// 		)
-			// 	}
+				if config.Target.Triple == "wasm32-unknown-polkawasm" {
+					args = append(args,
+						opt,
+						"-g",
+						"--signext-lowering",
+						// "--signature-pruning",
+						// "--const-hoisting",
+						// "--mvp-features",
+						result.Executable,
+						"--output",
+						result.Executable,
+					)
+				} else {
+					args = append(args,
+						opt,
+						"-g",
+						result.Executable,
+						"--output",
+						result.Executable,
+					)
+				}
 
-			// 	cmd := exec.Command(goenv.Get("WASMOPT"), args...)
-			// 	cmd.Stdout = os.Stdout
-			// 	cmd.Stderr = os.Stderr
+				cmd := exec.Command(goenv.Get("WASMOPT"), args...)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
 
-			// 	err := cmd.Run()
-			// 	if err != nil {
-			// 		return fmt.Errorf("wasm-opt failed: %w", err)
-			// 	}
-			// }
+				err := cmd.Run()
+				if err != nil {
+					return fmt.Errorf("wasm-opt failed: %w", err)
+				}
+			}
 
 			// Print code size if requested.
 			if config.Options.PrintSizes == "short" || config.Options.PrintSizes == "full" {
