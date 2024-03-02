@@ -2,7 +2,7 @@
 
 package runtime
 
-const gcDebug = false
+const gcDebug = true
 
 func printnum(num int) {
 	if num == 0 {
@@ -45,4 +45,40 @@ func printstr(str string) {
 		putcharBuffer[putcharPosition] = str[i]
 		putcharPosition++
 	}
+}
+
+//go:export _write_debug_info
+func writeDebugInfo(int32, int32) int64 {
+	printallocs()
+	return 0
+}
+
+func printalloc(curAlloc heapAllocation, i int) int {
+	size := int(curAlloc.end - curAlloc.start)
+	// printstr("alloc[")
+	// printnum(i)
+	// printstr("]: size ")
+	// printnum(size)
+	// printstr(" at ")
+	// printnum(int(curAlloc.start))
+	// printstr(" - ")
+	// printnum(int(curAlloc.end))
+	// printstr("\n")
+
+	return size
+}
+
+func printallocs() {
+	var totalSize int
+	for i, curAlloc := range allocations {
+		totalSize += printalloc(curAlloc, i)
+	}
+
+	printstr("total heap allocations - count: ")
+	printnum(len(allocations))
+	printstr(" size: ")
+	printnum(int(totalSize))
+	printstr("\n")
+	// reset
+	putcharPosition = 0
 }
