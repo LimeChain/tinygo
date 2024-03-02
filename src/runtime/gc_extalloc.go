@@ -22,8 +22,11 @@ var (
 	// the heap size.
 	gcTotalAlloc uint64
 
+	//
+	nilPointer = unsafe.Pointer(nil)
+
 	// Controls the heap growth and when to run the garbage collector.
-	heapUsageLimit uintptr = 2 * wasmPageSize * unsafe.Sizeof(unsafe.Pointer(nil))
+	heapUsageLimit uintptr = 4 * unsafe.Sizeof(nilPointer)
 
 	// Returned for zero-sized allocations to avoid returning nil pointers.
 	zeroSizedAlloc uint8
@@ -63,6 +66,8 @@ func setHeapEnd(newHeapEnd uintptr) {}
 //
 //go:noinline
 func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
+	// printstr("allocate\n")
+
 	// Ensure not in a recursive GC call.
 	if gcInProgress {
 		gcRunningPanic()
@@ -86,25 +91,84 @@ func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
 		// usage limit. If the garbage collector cannot free up enough memory,
 		// the limit is doubled until the allocation fits.
 		if needGC(size) {
-			tryGC(&gcRan, size, expandHeap)
+			if gcRan {
+				// If the garbage collector has already run, perform the action.
+				adjustHeapUsageLimit(size)
+			} else {
+				// Run the garbage collector and update the flag.
+				// GC()
+				gcRan = true
+			}
 			continue
 		}
 
+		// Ensure that there is enough space in the allocations list
+		// for the new allocations, resize if needed.
+		//
 		// Ensures that there is enough space in the allocations list
 		// for the new allocation.
-		expandAllocationsIfNeeded(&gcRan)
+		// Keep a copy of the current allocations list header.
+		allocationsHeader := *getSliceHeader(&allocations)
+
+		// Check if the allocations list is full, if so, attempt to double its capacity.
+		if len(allocations) == cap(allocations) {
+			doubledCap := uintptr(double(int(allocationsHeader.cap)))
+
+			// Allocate new memory for the underlying array of the allocations list.
+			ptr := extalloc(doubledCap * heapAllocationSize())
+			if ptr == nil {
+				if gcRan {
+					// If the garbage collector has already run, perform the action.
+					gcAllocPanic()
+				} else {
+					// Run the garbage collector and update the flag.
+					// GC()
+					gcRan = true
+				}
+			}
+
+			// Gets an allocation at the given offset in the allocations list.
+			//
+			// Create a new slice header for the allocations list.
+			newAllocationsHeader := getSliceHeader(&allocations)
+			setSliceHeader(newAllocationsHeader, ptr, allocationsHeader.len, doubledCap)
+
+			// Copies all allocations from the source slice to the destination slice.
+			//
+			// Copy the old allocations to the new allocations list.
+			for i := 0; i < int(allocationsHeader.len); i++ {
+				offsetPtr := unsafe.Add(allocationsHeader.ptr, uintptr(i)*heapAllocationSize())
+				entry := *(*heapAllocation)(offsetPtr)
+				setAllocationsEntry(newAllocationsHeader, uintptr(i), entry)
+			}
+			// TODO:
+			// memcpy(newAllocationsHeader.ptr, allocationsHeader.ptr, allocationsHeader.len)
+
+			// Free the old allocations list.
+			if allocationsHeader.cap != 0 {
+				free(allocationsHeader.ptr)
+			}
+		}
 
 		// Allocate memory with the requested size.
 		ptr := extalloc(size)
 		if ptr == nil {
 			// Runs a garbage collection cycle if needed and panics if the
 			// garbage collector cannot free up enough memory.
-			tryGC(&gcRan, size, fail)
+			if gcRan {
+				// If the garbage collector has already run, perform the action.
+				gcAllocPanic()
+			} else {
+				// Run the garbage collector and update the flag.
+				// GC()
+				gcRan = true
+			}
 			continue
 		}
 
+		newAlloc := newHeapAllocation(ptr, size)
 		// Update the allocations list with the new allocation.
-		appendAllocations(getSliceHeader(&allocations), newHeapAllocation(ptr, size))
+		appendAllocations(getSliceHeader(&allocations), newAlloc)
 
 		// Update the total allocated memory.
 		gcTotalAlloc += uint64(size)
@@ -121,6 +185,7 @@ func alloc(size uintptr, layout unsafe.Pointer) unsafe.Pointer {
 //
 //go:noinline
 func free(ptr unsafe.Pointer) {
+	// printstr("free\n")
 	gcFrees++
 	extfree(ptr)
 }
@@ -141,6 +206,8 @@ func markRoot(addr, root uintptr) {
 //
 //go:noinline
 func GC() {
+	// printstr("GC\n")
+
 	if gcInProgress {
 		gcRunningPanic()
 	}
@@ -195,36 +262,6 @@ func needGC(size uintptr) bool {
 	return gcTotalAlloc+uint64(size) > uint64(heapUsageLimit)
 }
 
-// Tries to run a GC cycle and then performs an action based on the callback.
-func tryGC(gcRan *bool, size uintptr, fn func(bool, uintptr)) {
-	if *gcRan {
-		// If the garbage collector has already run, perform the action.
-		fn(true, size)
-	} else {
-		// Run the garbage collector and update the flag.
-		GC()
-		*gcRan = true
-	}
-}
-
-// Expands the heap.
-//
-//go:inline
-func expandHeap(gcRan bool, size uintptr) {
-	if gcRan {
-		adjustHeapUsageLimit(size)
-	}
-}
-
-// Handles failure in memory allocation.
-//
-//go:inline
-func fail(gcRan bool, size uintptr) {
-	if gcRan {
-		gcAllocPanic()
-	}
-}
-
 // Increases the heapUsageLimit to accommodate the allocation size.
 //
 //go:inline
@@ -237,40 +274,6 @@ func adjustHeapUsageLimit(size uintptr) {
 		// This is only possible on hosted 32-bit systems.
 		// Allow the heap limit to encompass everything.
 		heapUsageLimit = ^uintptr(0)
-	}
-}
-
-// Ensure that there is enough space in the allocations list
-// for the new allocations, resize if needed.
-//
-//go:noinline
-func expandAllocationsIfNeeded(gcRan *bool) {
-	// Keep a copy of the current allocations list header.
-	allocationsHeader := *getSliceHeader(&allocations)
-
-	// Check if the allocations list is full, if so, attempt to double its capacity.
-	if len(allocations) == cap(allocations) {
-		doubledCap := uintptr(double(int(allocationsHeader.cap)))
-
-		// Allocate new memory for the underlying array of the allocations list.
-		ptr := extalloc(doubledCap * heapAllocationSize())
-		if ptr == nil {
-			tryGC(gcRan, 0, fail)
-		}
-
-		// Create a new slice header for the allocations list.
-		newAllocationsHeader := getSliceHeader(&allocations)
-		setSliceHeader(newAllocationsHeader, ptr, allocationsHeader.len, doubledCap)
-
-		// Copy the old allocations to the new allocations list.
-		copyAllocations(newAllocationsHeader, &allocationsHeader)
-		// TODO:
-		// memcpy(newAllocationsHeader.ptr, allocationsHeader.ptr, allocationsHeader.len)
-
-		// Free the old allocations list.
-		if allocationsHeader.cap != 0 {
-			free(allocationsHeader.ptr)
-		}
 	}
 }
 
@@ -290,28 +293,12 @@ func setSliceHeader(header *sliceHeader, ptr unsafe.Pointer, len, cap uintptr) {
 	header.cap = cap
 }
 
-// Gets an allocation at the given offset in the allocations list.
-//
-//go:inline
-func getAllocationsEntry(header *sliceHeader, offset uintptr) heapAllocation {
-	offsetPtr := unsafe.Add(header.ptr, offset*heapAllocationSize())
-	return *(*heapAllocation)(offsetPtr)
-}
-
 // Sets an allocation at the given offset in the allocations list.
 //
 //go:inline
 func setAllocationsEntry(header *sliceHeader, offset uintptr, entry heapAllocation) {
 	offsetPtr := unsafe.Add(header.ptr, offset*heapAllocationSize())
 	*(*heapAllocation)(offsetPtr) = entry
-}
-
-// Copies all allocations from the source slice to the destination slice.
-func copyAllocations(dstHeader *sliceHeader, srcHeader *sliceHeader) {
-	for i := 0; i < int(srcHeader.len); i++ {
-		entry := getAllocationsEntry(srcHeader, uintptr(i))
-		setAllocationsEntry(dstHeader, uintptr(i), entry)
-	}
 }
 
 // Appends an allocation to the end of the allocations list.
@@ -357,19 +344,34 @@ func prepareGC() {
 //
 //go:noinline
 func scan(start, end uintptr) {
-	alignment := unsafe.Alignof(unsafe.Pointer(nil))
+	// printstr("scan roots from ")
+	// printnum(int(start))
+	// printstr(" to ")
+	// printnum(int(end))
+	// printstr("\n")
+
+	alignment := unsafe.Alignof(nilPointer)
+
+	// printstr("alignment: ")
+	// printnum(int(alignment))
+	// printstr("\n")
 
 	// Align the start pointer to the next pointer-aligned word.
 	start = (start + alignment - 1) &^ (alignment - 1)
 
 	// Mark all pointer aligned words in the given range.
-	for addr := start; addr+unsafe.Sizeof(unsafe.Pointer(nil)) <= end; addr += alignment {
+	for addr := start; addr+unsafe.Sizeof(nilPointer) <= end; addr += alignment {
+		// printstr("addr ")
+		// printnum(int(addr))
+		// printstr(" contains ")
+		// printnum(int(*(*uintptr)(unsafe.Pointer(addr))))
+		// printstr("\n")
 		mark(*(*uintptr)(unsafe.Pointer(addr)))
 	}
 
 	// Mark the last word in the given range if it is a pointer.
-	if end >= start+unsafe.Sizeof(unsafe.Pointer(nil)) {
-		mark(*(*uintptr)(unsafe.Pointer(end - unsafe.Sizeof(unsafe.Pointer(nil)))))
+	if end >= start+unsafe.Sizeof(nilPointer) {
+		mark(*(*uintptr)(unsafe.Pointer(end - unsafe.Sizeof(nilPointer))))
 	}
 }
 
@@ -392,6 +394,9 @@ func mark(addr uintptr) bool {
 	curAlloc := searchAllocations(addr)
 	if curAlloc != nil && !curAlloc.marked {
 		curAlloc.marked = true
+		// printstr("marked ")
+		// printalloc(*curAlloc, -1)
+
 		// Push the allocation onto the scan queue to scan it later.
 		curAlloc.next = referenceScanQueue
 		referenceScanQueue = curAlloc

@@ -12,13 +12,13 @@ import "unsafe"
 // 	run()
 // }
 
-// //go:export _debug_buf
-// func debugBuf() uint64 {
-// 	return uint64(uintptr(unsafe.Pointer(&putcharBuffer[0]))) | (uint64(putcharBufferSize) << 32)
-// }
+//go:export _debug_buf
+func debugBuf() uint64 {
+	return uint64(uintptr(unsafe.Pointer(&putcharBuffer[0]))) | (uint64(putcharBufferSize) << 32)
+}
 
 // Using global variables to avoid heap allocation.
-const putcharBufferSize = 16 // increase the debug output size
+const putcharBufferSize = 32 * 1024 // increase the debug output size
 
 var (
 	putcharBuffer        = [putcharBufferSize]byte{}
@@ -79,14 +79,21 @@ func syscall_Exit(code int) {
 }
 
 //go:linkname procPin sync/atomic.runtime_procPin
-func procPin() {
-
-}
+func procPin() {}
 
 //go:linkname procUnpin sync/atomic.runtime_procUnpin
-func procUnpin() {
+func procUnpin() {}
 
+func hardwareRand() (n uint64, ok bool) {
+	n |= uint64(libc_arc4random())
+	n |= uint64(libc_arc4random()) << 32
+	return n, true
 }
+
+// uint32_t arc4random(void);
+//
+//export arc4random
+func libc_arc4random() uint32
 
 //go:wasmimport env ext_allocator_malloc_version_1
 func extalloc(size uintptr) unsafe.Pointer
